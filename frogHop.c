@@ -21,26 +21,38 @@ typedef struct PadNodeStruct{
    struct PadNodeStruct *next;
 } PadNode;
 
-Pond* initializePond(int size);
-void print_pond(Pond *P);
+/* problem solving methods */
 void find_path(Pond *P, int x, int y, int i, int p);
+
+/* init methods */
+Pond* initializePond(int size);
 PadSet* initializePadSet();
 PadNode* initializePadNode();
+
+/* print methods */
+void print_pond(Pond *P);
 void print_set(PadSet *pSet);
-void addNode(PadSet *P, PadNode *N);
+
+/* PadSet Modifiers */
 PadSet *padSetPopulatedWithNextPads(Pond *P, int x, int y);
+void addNode(PadSet *P, PadNode *N);
 void addNewNode(PadSet *P, int x, int y);
 PadNode* removeNode(PadSet *P);
 
 int main( int argc, char *argv[] )
 {
-   if(argv[1]==NULL || argv[2]==NULL || argv[3]==NULL) {
-      printf("Invalid arguments... exiting.\n");
+   if(argv[1]==NULL || argv[2]==NULL || argv[3]==NULL || argc != 4) {
+      printf("Invalid number of arguments... exiting.\n");
       return 1;
    }
    int size = atoi(argv[1]);
    int xPos = atoi(argv[2]);
    int yPos = atoi(argv[3]);
+
+   if( xPos >= size || xPos <0 || yPos >= size || yPos <0) {
+      printf("Invalid starting position in arguments... exiting.\n");
+      return 1;
+   }
    
    printf("The grid will be %dX%d\n",size, size);
    printf("The starting position is: %d, %d\n", xPos, yPos); 
@@ -55,46 +67,9 @@ int main( int argc, char *argv[] )
    return 1;
 }
 
-Pond* initializePond(int size)
-{
-   int i,j;
-   Pond *P=malloc(sizeof(Pond));
-   P->length=size;
-   P->maxIndex=size-1;
-   P->grid=calloc(size, sizeof *P->grid);
-   for(i=0; i<P->length; i++) {
-      P->grid[i]=calloc(size, sizeof(int));
-   }
-   return P;
-}
-
-void print_pond(Pond *P)
-{
-   int i,j;
-   for(i=0; i<P->length; i++) {
-      for(j=0; j<P->length; j++) {
-         printf("%2d ", P->grid[i][j]);
-      }
-      putchar('\n');
-   }
-}
-
+/* problem solving methods */
 void find_path(Pond *P, int x, int y, int c, int p)
 {
-   /*
-  find_path ( Pond, x, y, i , prevKind)
-     Pond[x][y] = i   //the ith pad along the path
-     if i==SIZE*SIZE  //reached the end of the path
-        print_pond(Pond)
-        exit
-     else
-        let nextValidPadSet be the set of next valid pads
-        for nextPad in nextValidPadSet do
-            let [Px][Py] be nextPad's coordinates 
-            find_path ( Pond, Px, Py, i+1, thisKind )
-        Pond[x][y] = 0   //backtrack
-    */
-
    P->grid[x][y] = c;
    if(c == P->length*P->length) {
       //print_pond(P);
@@ -110,6 +85,20 @@ void find_path(Pond *P, int x, int y, int c, int p)
       }
       P->grid[x][y]=0;
    }
+}
+
+/* init methods */
+Pond* initializePond(int size)
+{
+   int i,j;
+   Pond *P=malloc(sizeof(Pond));
+   P->length=size;
+   P->maxIndex=size-1;
+   P->grid=calloc(size, sizeof *P->grid);
+   for(i=0; i<P->length; i++) {
+      P->grid[i]=calloc(size, sizeof(int));
+   }
+   return P;
 }
 
 PadSet* initializePadSet()
@@ -129,6 +118,31 @@ PadNode* initializePadNode()
    returnPadNode->next=NULL;
    return returnPadNode;
 }
+
+/* printing methods */
+
+void print_pond(Pond *P)
+{
+   int i,j;
+   for(i=0; i<P->length; i++) {
+      for(j=0; j<P->length; j++) {
+         printf("%2d ", P->grid[i][j]);
+      }
+      putchar('\n');
+   }
+}
+void print_set(PadSet *pSet)
+{
+   PadNode *P = pSet->first;
+   printf("(%d, %d) ", P->x, P->y);
+   while(P->next != NULL) {
+      printf("-> (%d, %d) ", P->x, P->y);
+      P=P->next;
+   }
+   putchar('\n');
+}
+
+/* PadSet modifying methods */
 PadSet *padSetPopulatedWithNextPads(Pond *P, int x, int y)
 {
    int tempX, tempY;
@@ -213,16 +227,6 @@ PadSet *padSetPopulatedWithNextPads(Pond *P, int x, int y)
    //print_set(returnPadSet);
    //sleep(1);
    return returnPadSet;
-}
-void print_set(PadSet *pSet)
-{
-   PadNode *P = pSet->first;
-   printf("(%d, %d) ", P->x, P->y);
-   while(P->next != NULL) {
-      printf("-> (%d, %d) ", P->x, P->y);
-      P=P->next;
-   }
-   putchar('\n');
 }
 void addNode(PadSet *P, PadNode *N)
 {
