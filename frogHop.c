@@ -38,6 +38,7 @@ PadSet *padSetPopulatedWithNextPads(Pond *P, int x, int y);
 void addNode(PadSet *P, PadNode *N);
 void addNewNode(PadSet *P, int x, int y);
 PadNode* removeNode(PadSet *P);
+void freePadSet(PadSet *P) ;
 
 int main( int argc, char *argv[] )
 {
@@ -83,6 +84,7 @@ void find_path(Pond *P, int x, int y, int c, int p)
          find_path(P, tempPadNode->x, tempPadNode->y, c+1, c);
          tempPadNode=tempPadNode->next;
       }
+      freePadSet(nextValidPadSet);
       P->grid[x][y]=0;
    }
 }
@@ -255,4 +257,16 @@ PadNode* removeNode(PadSet *P)
    P->first=P->first->next;
    free(temp);
    return temp;
+}
+void freePadSet(PadSet *P) 
+{
+   PadNode *pNode;
+   PadNode *nodeToFree;
+   pNode=P->first;
+   while(pNode!=NULL) {
+      nodeToFree=pNode;
+      pNode=pNode->next;
+      free(nodeToFree);
+   }
+   free(P);
 }
