@@ -2,19 +2,20 @@
 #include <stdio.h>
 #include <unistd.h>
 
-int startX, startY;
-
+//The main pond which contains the lillypads and some simplyfying variables
 typedef struct PondStruct {
    int **grid;
    int length;
    int maxIndex;
 } Pond;
 
+//The PadSet stores the linked list that stores all the possible positions.
 typedef struct PadSetStruct {
    struct PadNodeStruct *first;
    struct PadNodeStruct *last;
 } PadSet;
 
+//The PadNodes that are stored as a linked list in PadSets
 typedef struct PadNodeStruct{
    int x;
    int y;
@@ -37,11 +38,11 @@ void print_set(PadSet *pSet);
 PadSet *padSetPopulatedWithNextPads(Pond *P, int x, int y);
 void addNode(PadSet *P, PadNode *N);
 void addNewNode(PadSet *P, int x, int y);
-PadNode* removeNode(PadSet *P);
 void freePadSet(PadSet *P) ;
 
 int main( int argc, char *argv[] )
 {
+   //argument checking.
    if(argv[1]==NULL || argv[2]==NULL || argv[3]==NULL || argc != 4) {
       printf("Invalid number of arguments... exiting.\n");
       return 1;
@@ -50,25 +51,31 @@ int main( int argc, char *argv[] )
    int xPos = atoi(argv[2]);
    int yPos = atoi(argv[3]);
 
+   //more argument checking.
    if( xPos >= size || xPos <0 || yPos >= size || yPos <0) {
       printf("Invalid starting position in arguments... exiting.\n");
       return 1;
    }
-   
-   printf("The grid will be %dX%d\n",size, size);
-   printf("The starting position is: %d, %d\n", xPos, yPos); 
 
    Pond *pond;
-   printf("%p => ", pond);
    pond=initializePond(size);
-   printf("%p\n", pond);
-   print_pond(pond);
    find_path(pond, xPos, yPos, 1, 0);
    printf("No path found.");
    return 1;
 }
 
 /* problem solving methods */
+
+/**
+ * Function: find_path
+ * Given a pond and starting position,
+ * recursively finds the first possible path.
+ * *P: The given pond used for the path finding and tracking
+ * x: the x position of the frog.
+ * y: the y position of the frog.
+ * c: the current step in the pathfinding.
+ * p: the previous step in the pathfinding.
+ */
 void find_path(Pond *P, int x, int y, int c, int p)
 {
    P->grid[x][y] = c;
@@ -90,6 +97,11 @@ void find_path(Pond *P, int x, int y, int c, int p)
 }
 
 /* init methods */
+/**
+ * Function: initializePond
+ * size: the size of the grid.
+ * returns: Pond* to an initialized memory block 
+ */
 Pond* initializePond(int size)
 {
    int i,j;
@@ -103,6 +115,10 @@ Pond* initializePond(int size)
    return P;
 }
 
+/**
+ * Function: initializePadSet
+ * returns PadSet* to initialized memory.
+ */
 PadSet* initializePadSet()
 {
    PadSet *returnPadSet;
@@ -111,6 +127,10 @@ PadSet* initializePadSet()
    return returnPadSet;
 }
 
+/**
+ * Function: initializePadNode
+ * returns: A PadNode pointer to allocated memory.
+ */
 PadNode* initializePadNode()
 {
    PadNode *returnPadNode;
@@ -123,6 +143,10 @@ PadNode* initializePadNode()
 
 /* printing methods */
 
+/**
+ * Function: print_pond
+ * Given a Pond, prints it in a formatted fashion.
+ */
 void print_pond(Pond *P)
 {
    int i,j;
@@ -133,6 +157,11 @@ void print_pond(Pond *P)
       putchar('\n');
    }
 }
+
+/**
+ * Function: print_set
+ * Given a PadSet, prints all the nodes in a formatted fashion. (used for testing.)
+ */
 void print_set(PadSet *pSet)
 {
    PadNode *P = pSet->first;
@@ -144,7 +173,18 @@ void print_set(PadSet *pSet)
    putchar('\n');
 }
 
-/* PadSet modifying methods */
+/**
+ * Function: padSetPopulatedWithNextPads
+ * Given a PasSet and coordinates x and y,
+ * it is populated with the next positions.
+ *
+ * These positions are calculated clockwise starting from the "one o'clock" position onwards.
+ *
+ * *P: The current Pond being used.
+ * x: The current x position.
+ * y: The current y position.
+ * returns: A PadSet pointer populated with PadNodes.
+ */
 PadSet *padSetPopulatedWithNextPads(Pond *P, int x, int y)
 {
    int tempX, tempY;
@@ -157,7 +197,6 @@ PadSet *padSetPopulatedWithNextPads(Pond *P, int x, int y)
       tempX=x-2; tempY= y+1;
       if(P->grid[tempX][tempY]!=0) {
       } else {
-         //printf("1\n");
          addNewNode(returnPadSet, tempX, tempY);
       }
    }
@@ -166,17 +205,14 @@ PadSet *padSetPopulatedWithNextPads(Pond *P, int x, int y)
       tempX=x-1; tempY=y+2;
       if(P->grid[tempX][tempY]!=0) {
       } else {
-         //printf("2\n");
          addNewNode(returnPadSet, tempX, tempY);
       }
    }
    //4 o'clock
    if(x<=P->maxIndex-1 && y<=P->maxIndex-2) {
-      //printf("%d, %d\n", x, y);
       tempX=x+1; tempY=y+2;
       if(P->grid[tempX][tempY]!=0) {
       } else {
-         //printf("4 o'clock added\n");
          addNewNode(returnPadSet, tempX, tempY);
       }
    }
@@ -185,7 +221,6 @@ PadSet *padSetPopulatedWithNextPads(Pond *P, int x, int y)
       tempX=x+2;  tempY=y+1;
       if(P->grid[tempX][tempY]!=0) {
       } else {
-         //printf("5 o'clock added\n");
          addNewNode(returnPadSet, tempX, tempY);
       }
    }
@@ -194,7 +229,6 @@ PadSet *padSetPopulatedWithNextPads(Pond *P, int x, int y)
       tempX=x+2;  tempY=y-1; 
       if(P->grid[tempX][tempY]!=0) {
       } else {
-         //printf("7\n");
          addNewNode(returnPadSet, tempX, tempY);
       }
    }
@@ -203,7 +237,6 @@ PadSet *padSetPopulatedWithNextPads(Pond *P, int x, int y)
       tempX=x+1;  tempY=y-2;
       if(P->grid[tempX][tempY]!=0) {
       } else {
-         //printf("8\n");
          addNewNode(returnPadSet, tempX, tempY);
       }
    }
@@ -212,7 +245,6 @@ PadSet *padSetPopulatedWithNextPads(Pond *P, int x, int y)
       tempX=x-1;  tempY=y-2;
       if(P->grid[tempX][tempY]!=0) {
       } else {
-         //printf("10\n");
          addNewNode(returnPadSet, tempX, tempY); 
       }
    }
@@ -221,17 +253,23 @@ PadSet *padSetPopulatedWithNextPads(Pond *P, int x, int y)
       tempX=x-2;  tempY=y-1;
       if(P->grid[tempX][tempY]!=0) {
       } else {
-         //printf("11\n");
          addNewNode(returnPadSet, tempX, tempY);
       }
    }
 
-   //print_set(returnPadSet);
-   //sleep(1);
    return returnPadSet;
 }
+
+/**
+ * Function: addNode
+ * Given a PadSet and a PadNode, adds the node to the linked list.
+ * *P: The given PadSet to populate.
+ * *N: The PadNode to be added.
+ */
 void addNode(PadSet *P, PadNode *N)
 {
+
+   //making sure that to account for the empty and one cases.
    if(P->first==NULL) {
       P->first=N;
       P->last=N;
@@ -242,8 +280,15 @@ void addNode(PadSet *P, PadNode *N)
       P->last->next=N;
       P->last=N;
    }
-   //printf("%d, %d added\n", N->x, N->y);
 }
+
+/**
+ * Function: addNewNode
+ * Given a PadSet and coordinates, adds a new node with those coordinates.
+ * *P: The PadSet to be added to.
+ * x: The x coordinate of the PadNode to be added
+ * y: The y coordinate of the PadNode to be added.
+ */
 void addNewNode(PadSet *P, int x, int y)
 {
    PadNode *nodeToAdd = initializePadNode();
@@ -251,13 +296,12 @@ void addNewNode(PadSet *P, int x, int y)
    nodeToAdd->y=y;
    addNode(P, nodeToAdd);
 }
-PadNode* removeNode(PadSet *P)
-{
-   PadNode *temp = P->first;
-   P->first=P->first->next;
-   free(temp);
-   return temp;
-}
+
+/**
+ * Function: freePadSet
+ * Frees the memory used by a PadSet, including all of its PadNodes.
+ * *P The PadSet to be freed.
+ */
 void freePadSet(PadSet *P) 
 {
    PadNode *pNode;
